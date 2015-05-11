@@ -3,7 +3,6 @@
  */
 package juego;
 
-import java.util.Arrays;
 import java.util.Random;
 
 /**
@@ -27,9 +26,7 @@ public class Juego {
     private static final int TAMANIO_CUADRICULA_EXPERTO_Y = 16;
     private static final int NUMERO_DE_MINAS_EXPERTO = 99;
     private int[][] tablero;
-    private int[][] resultado;
-    private int dificultad; // 0 principiante, 1 intermedio, 2 experto, 3
-    // personalizado
+    private int dificultad;
     private int filas;
     private int columnas;
     private int bombas;
@@ -57,13 +54,6 @@ public class Juego {
 	this.bombasAcertadas = bombasAcertadas;
     }
 
-    /**
-     * @return the bombasAcertadas
-     */
-    public int getBombasAcertadas() {
-	return bombasAcertadas;
-    }
-
     public Juego(int filas, int columnas, int bombas) {
 	this.filas = filas;
 	this.columnas = columnas;
@@ -76,11 +66,6 @@ public class Juego {
 
     private void inicializarArrays() {
 	tablero = new int[filas][columnas];
-	resultado = new int[filas][columnas];
-	for (int i = 0; i < resultado.length; i++) {
-	    Arrays.fill(resultado[i], -2);
-	}
-
     }
 
     public void iniciarVariables(int dificultad) {
@@ -117,19 +102,14 @@ public class Juego {
 
     }
 
-    public void verTablero() {
-	for (int i = 0; i < filas; i++) {
-	    for (int j = 0; j < columnas; j++) {
-		System.out.print(tablero[i][j] + "\t");
-	    }
-	    System.out.println();
-	}
+    public int getBombas() {
+	return bombas;
     }
 
-    public void verResultado() {
-	for (int i = 0; i < filas; i++) {
-	    for (int j = 0; j < columnas; j++) {
-		System.out.print(resultado[i][j] + "\t");
+    public void verTablero() {
+	for (int i = 0; i < tablero.length; i++) {
+	    for (int j = 0; j < tablero[i].length; j++) {
+		System.out.print(tablero[i][j] + "\t");
 	    }
 	    System.out.println();
 	}
@@ -216,35 +196,6 @@ public class Juego {
 	    return true;
 
 	return false;
-    }
-
-    public void mostratBombas() {
-	for (int i = 0; i < filas; i++) {
-	    for (int j = 0; j < columnas; j++) {
-		if (tablero[i][j] == -1) {
-		    resultado[i][j] = -1;
-		}
-	    }
-	}
-    }
-
-    public void tirar(int y, int x) {
-
-    }
-
-    public static void main(String[] args) {
-	Juego j = new Juego(0);
-	j.colocarMinas();
-	j.verTablero();
-	j.mostratBombas();
-	j.verResultado();
-    }
-
-    /**
-     * @return the resultado
-     */
-    public int[][] getResultado() {
-	return resultado;
     }
 
 }

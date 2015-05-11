@@ -3,9 +3,10 @@
  */
 package gui;
 
+import java.awt.Color;
 import java.awt.Dimension;
+import java.awt.Font;
 import java.awt.GridLayout;
-import java.awt.Image;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
@@ -32,7 +33,7 @@ public class VentanaBuscaminas extends JFrame implements ActionListener {
     private JPanel minas;
     private JMenuBar menu;
     private JMenuItem reiniciar, salir, basico, intermedio, avanzado,
-	    personalizado;
+    personalizado;
     private JButton[][] botones;
 
     public VentanaBuscaminas(String titulo) {
@@ -65,7 +66,7 @@ public class VentanaBuscaminas extends JFrame implements ActionListener {
 	dificultad.add(basico);
 	dificultad.add(intermedio);
 	dificultad.add(avanzado);
-	dificultad.add(personalizado);
+	// dificultad.add(personalizado);
 	minas = new JPanel(new GridLayout());
 	menu.add(inicio);
 	menu.add(dificultad);
@@ -89,7 +90,7 @@ public class VentanaBuscaminas extends JFrame implements ActionListener {
 	    j = new Juego(filas, columnas, bombas);
 
 	}
-
+	j.verTablero();
 	int w = j.getColumnas() * 50;
 	int h = j.getFilas() * 50;
 	setSize(new Dimension(w, h));
@@ -162,7 +163,7 @@ public class VentanaBuscaminas extends JFrame implements ActionListener {
 	    if (e.getSource() == intermedio) {
 		if (j.getDificultad() == 1) {
 		    reiniciarTablero();
-		    j.colocarMinas();
+		    j = new Juego(j.getDificultad());
 		} else {
 		    minas.removeAll();
 		    configurar(1);
@@ -171,7 +172,7 @@ public class VentanaBuscaminas extends JFrame implements ActionListener {
 	    if (e.getSource() == avanzado) {
 		if (j.getDificultad() == 2) {
 		    reiniciarTablero();
-		    j.colocarMinas();
+		    j = new Juego(j.getDificultad());
 		} else {
 		    minas.removeAll();
 		    configurar(2);
@@ -180,7 +181,7 @@ public class VentanaBuscaminas extends JFrame implements ActionListener {
 	    if (e.getSource() == personalizado) {
 		if (j.getDificultad() == 4) {
 		    reiniciarTablero();
-		    j.colocarMinas();
+		    j = new Juego(j.getDificultad());
 		} else {
 		    minas.removeAll();
 		    configurar(4);
@@ -212,84 +213,169 @@ public class VentanaBuscaminas extends JFrame implements ActionListener {
 		    for (int i = 0; i < j.getFilas(); i++) {
 			for (int j1 = 0; j1 < j.getColumnas(); j1++) {
 			    if (j.getTablero()[i][j1] == -1) {
-				botones[i][j1]
-					.setIcon(redimensionarIcono("img/bomba.gif"));
+				botones[i][j1].setIcon(new ImageIcon(
+					"img/bomba.gif"));
 
 			    }
 			}
 		    }
-		} else if (j.esNumero(y, x)) {
-		    b.setText(Integer.toString(j.getTablero()[y][x]));
+		    JOptionPane.showMessageDialog(getContentPane(),
+			    "Has perdido", "OH NO",
+			    JOptionPane.INFORMATION_MESSAGE);
+		    reiniciarTablero();
+		    j = new Juego(j.getDificultad());
 		} else {
+		    if (j.esNumero(y, x)) {
+			colorearBotones(j.getTablero()[y][x], y, x);
+		    } else {
+			expandir(y, x);
+		    }
 
-		    expandir(y, x);
+		    if (esVictoriaEspacios()) {
+			ponerBanderas();
+			JOptionPane.showMessageDialog(getContentPane(),
+				"HAS GANADO", "ENHORABUENA",
+				JOptionPane.INFORMATION_MESSAGE);
+			reiniciarTablero();
+			j = new Juego(j.getDificultad());
+		    }
+
 		}
+
 	    }
 
 	}
 
     }
 
+    private void ponerBanderas() {
+	for (int i = 0; i < botones.length; i++) {
+	    for (int j1 = 0; j1 < botones[i].length; j1++) {
+		if (j.getTablero()[i][j1] == -1) {
+		    botones[i][j1].setIcon(new ImageIcon(
+			    VentanaBuscaminas.class
+				    .getResource("img/bandera.jpg")));
+		}
+
+	    }
+	}
+
+    }
+
+    private boolean esVictoriaEspacios() {
+	int cont = 0;
+	for (int i = 0; i < botones.length; i++) {
+	    for (int j = 0; j < botones[i].length; j++) {
+		if (botones[i][j].isEnabled()
+			&& botones[i][j].getText().equals("")) {
+		    cont++;
+		}
+	    }
+	}
+	if (cont == j.getBombas())
+	    return true;
+
+	return false;
+    }
+
+    private void colorearBotones(int num, int y, int x) {
+	botones[y][x].setText(Integer.toString(num));
+	botones[y][x].setFont(new Font("Arial", Font.BOLD, 12));
+	if (num == 1) {
+	    botones[y][x].setForeground(Color.GREEN);
+	}
+	if (num == 2) {
+	    botones[y][x].setForeground(Color.BLUE);
+	}
+	if (num == 3) {
+	    botones[y][x].setForeground(Color.ORANGE);
+	}
+	if (num == 4) {
+	    botones[y][x].setForeground(Color.PINK);
+	}
+	if (num >= 5) {
+	    botones[y][x].setForeground(Color.RED);
+	}
+    }
+
     public void expandir(int y, int x) {
 
-	if (j.esNumero(y, x)) {
-	    botones[y][x].setText(Integer.toString(j.getTablero()[y][x]));
-	} else {
-	    botones[y][x].setEnabled(false);
-	    // contadores superiores
-	    if ((y - 1) >= 0 && (x - 1) >= 0
-		    && j.getTablero()[y - 1][x - 1] == 0) {
+	botones[y][x].setEnabled(false);
+	if ((y - 1) >= 0 && (x - 1) >= 0) {
+	    if (j.getTablero()[y - 1][x - 1] == 0
+		    && botones[y - 1][x - 1].isEnabled()) {
 		expandir(y - 1, x - 1);
+	    } else if (j.esNumero(y - 1, x - 1)) {
+		colorearBotones(j.getTablero()[y - 1][x - 1], y - 1, x - 1);
 	    }
-	    if ((y - 1) >= 0 && (x + 1) < j.getColumnas()
-		    && j.getTablero()[y - 1][x + 1] == 0) {
+	}
+	if ((y - 1) >= 0 && (x + 1) < j.getColumnas()) {
+	    if (j.getTablero()[y - 1][x + 1] == 0
+		    && botones[y - 1][x + 1].isEnabled()) {
 		expandir(y - 1, x + 1);
+	    } else if (j.esNumero(y - 1, x + 1)) {
+		colorearBotones(j.getTablero()[y - 1][x + 1], y - 1, x + 1);
 	    }
-	    if ((y - 1) >= 0 && j.getTablero()[y - 1][x] == 0) {
+	}
+	if ((y - 1) >= 0) {
+	    if (j.getTablero()[y - 1][x] == 0 && botones[y - 1][x].isEnabled()) {
 		expandir(y - 1, x);
+	    } else if (j.esNumero(y - 1, x)) {
+		colorearBotones(j.getTablero()[y - 1][x], y - 1, x);
 	    }
-	    // contadores inferiores
-	    if ((y + 1) < j.getFilas() && (x - 1) >= 0
-		    && j.getTablero()[y + 1][x - 1] == 0) {
+	}
+	if ((y + 1) < j.getFilas() && (x - 1) >= 0) {
+	    if (j.getTablero()[y + 1][x - 1] == 0
+		    && botones[y + 1][x - 1].isEnabled()) {
 		expandir(y + 1, x - 1);
+	    } else if (j.esNumero(y + 1, x - 1)) {
+		colorearBotones(j.getTablero()[y + 1][x - 1], y + 1, x - 1);
 	    }
-	    if ((y + 1) < j.getFilas() && (x + 1) < j.getColumnas()
-		    && j.getTablero()[y + 1][x + 1] == 0) {
+	}
+	if ((y + 1) < j.getFilas() && (x + 1) < j.getColumnas()) {
+	    if (j.getTablero()[y + 1][x + 1] == 0
+		    && botones[y + 1][x + 1].isEnabled()) {
 		expandir(y + 1, x + 1);
+	    } else if (j.esNumero(y + 1, x + 1)) {
+		colorearBotones(j.getTablero()[y + 1][x + 1], y + 1, x + 1);
 	    }
-	    if ((y + 1) < j.getFilas() && j.getTablero()[y + 1][x] == 0) {
+	}
+	if ((y + 1) < j.getFilas()) {
+	    if (j.getTablero()[y + 1][x] == 0 && botones[y + 1][x].isEnabled()) {
 		expandir(y + 1, x);
+	    } else if (j.esNumero(y + 1, x)) {
+		colorearBotones(j.getTablero()[y + 1][x], y + 1, x);
 	    }
 
-	    // contadores lados
-	    if ((x + 1) < j.getColumnas() && j.getTablero()[y][x + 1] == 0) {
+	}
+	if ((x + 1) < j.getColumnas()) {
+	    if (j.getTablero()[y][x + 1] == 0 && botones[y][x + 1].isEnabled()) {
 		expandir(y, x + 1);
+	    } else if (j.esNumero(y, x + 1)) {
+		colorearBotones(j.getTablero()[y][x + 1], y, x + 1);
 	    }
-	    if ((x - 1) >= 0 && j.getTablero()[y][x - 1] == 0) {
+	}
+	if ((x - 1) >= 0) {
+	    if (j.getTablero()[y][x - 1] == 0 && botones[y][x - 1].isEnabled()) {
 		expandir(y, x - 1);
+	    } else if (j.esNumero(y, x - 1)) {
+		colorearBotones(j.getTablero()[y][x - 1], y, x - 1);
 	    }
 	}
 
     }
 
     public ImageIcon redimensionarIcono(String icono) {
-	ImageIcon icon = new ImageIcon(icono); // creamos un icono con la
-	// seleccion
-	Image i = icon.getImage(); // creamos una imagen con el icono
-	Image otrai = i.getScaledInstance(48, 48, java.awt.Image.SCALE_SMOOTH); // redimensionamos
-	// la
-	// imagen
-	ImageIcon icon2 = new ImageIcon(otrai); // creamos un icono
-	// redimensionado
+	ImageIcon icon = new ImageIcon(icono);
 
-	return icon2;
+	return icon;
     }
 
     private class EscuchaClickDerecho extends MouseAdapter {
 
 	/*
 	 * (non-Javadoc)
-	 *
+	 * 
 	 * @see
 	 * java.awt.event.MouseListener#mousePressed(java.awt.event.MouseEvent)
 	 */
@@ -311,7 +397,8 @@ public class VentanaBuscaminas extends JFrame implements ActionListener {
 		    }
 		}
 		if (b.getIcon() == null && b.getText().equals("")) {
-		    b.setIcon(redimensionarIcono("img/bandera.jpg"));
+		    b.setIcon(new ImageIcon(VentanaBuscaminas.class
+			    .getResource("img/bandera.jpg")));
 		    if (j.esMina(y, x))
 			j.incrementarBombasAcertadas();
 		} else {
@@ -333,7 +420,8 @@ public class VentanaBuscaminas extends JFrame implements ActionListener {
 		    JOptionPane.showMessageDialog(getContentPane(),
 			    "HAS GANADO", "ENHORABUENA",
 			    JOptionPane.INFORMATION_MESSAGE);
-		    configurar(0);
+		    reiniciarTablero();
+		    j = new Juego(j.getDificultad());
 		}
 
 	    }
